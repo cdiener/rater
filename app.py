@@ -24,8 +24,7 @@ class PersonForm(Form):
     choices=[('0', 'dubious'), ('1', 'average'), ('2', 'national leader'),
     ('3', 'international leader')])
     dist = SelectField('How do you rate the travel distance?', [validators.Required()],
-    choices=[('0', 'local'), ('1', 'national'), ('2', 'international'),
-    ('3', 'international leader')])
+    choices=[('0', 'local'), ('1', 'national'), ('2', 'international')])
 
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
@@ -64,7 +63,7 @@ def login():
         session['rated'] = 0
         flash('Thank you. Logging in...')
         return redirect(url_for('show_entries'))
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, n_user=len(app.config['USERS']))
 
 @app.route('/')
 @login_required
