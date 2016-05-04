@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="hero"><br><br><h1>IS3B applicant rater</h1><br><br></div>
+
+<div class="container">
+<div class="row">
+    <h2>Your stats</h2>
+    <div class="card">
+		<h1>Applicant reviews</h1><br>
+        <h3>You have reviewed {{nrev}} of {{ntot}} applicants. Nice job!<h3>
+    </div>
+    {% if role == "all" %}
+    <div class="card">
+        <h1>Abstract reviews</h1><br>
+        <h3>You have reviewed {{nabsrev}} of {{nabstot}} sent abstracts. Way to go!<h3>
+    </div>{% endif %}</div></div>
+{% endblock %}

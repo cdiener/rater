@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="hero"><br><br><h1>IS3B applicant rater</h1><br><br></div>
+
+<div class="container">
+<div class="row">
+
+    <div class="card small">
+		<div class="items"><div class="btn badge sm blue"><i class="fa fa-facebook"></i></div>
+		<div class="btn badge sm red"><i class="fa fa-google-plus"></i></div></div>
+		<h1>Login</h1><br>
+		<form method=post action="/login">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.token, placeholder="token", size=60) }}
+            <input type=submit value="Log in" class="btn green sm">
+        </form>
+    </div></div></div>
+{% endblock %}

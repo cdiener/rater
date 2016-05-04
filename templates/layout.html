@@ -1,0 +1,53 @@
+{% from "_formhelpers.html" import render_field %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>IS3B review app</title>
+<meta name="description" content="IS3B application review">
+<meta name="viewport" content="width=device-width, max-scale=1, min-scale=1, user-scalable=no">
+<link href='//fonts.googleapis.com/css?family=Lato|Inconsolata' rel='stylesheet' type='text/css'-->
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link type="text/css" rel="stylesheet" href="/static/soma.css"/>
+<style type="text/css">
+	.hero {
+		width: 100%;
+		padding: 20px 0;
+		text-align: center;
+		font-size: 28px;
+		color: #fff;
+		background: url(/static/dna.jpg);
+		background-size: cover;
+		position: relative;
+		z-index: -1;
+	}
+
+	.hero > h1 {
+		font: 50px Inconsolata, monospace;
+	}
+
+    ul.errors { color: red; }
+
+    .card.small { max-width: 600px; margin-left: auto; margin-right: auto;}
+
+</style>
+</head>
+	<body>
+		<div class="nav" id="topnav" tabindex="-1" onclick="toggle()">
+            <div class="container">
+            <a href="/" class="pagename">{% if user %}Hi {{user}}!{% endif %}</a>
+            <a href="/"><i class="fa fa-home fa-fw"></i>&nbsp;&nbsp;Home</a>
+            {% if user %}<a href="/applicants"><i class="fa fa-users fa-fw"></i>&nbsp;&nbsp;Review applicants</a>
+            {% if role == "all" %}<a href="/abstracts"><i class="fa fa-book fa-fw"></i>&nbsp;&nbsp;Review abstracts</a>
+            {% endif %}
+            <a href="/logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp;&nbsp;Log out</a>
+            {% endif %}
+            </div>
+        </div>
+        {% block content %}{% endblock %}
+        <script type="text/javascript">
+			var a=!1,b=document.getElementById("topnav");toggle=function(){a?(b.className="nav",b.blur()):b.className="nav show";a=!a};
+		</script>
+	</body>
+</html>
