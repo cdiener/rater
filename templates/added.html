@@ -1,14 +1,16 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="hero"><br><br><h1>IS3B applicant rater</h1><br><br></div>
-
 <div class="container">
 <div class="row">
-
+    <div class="col c12">
     <div class="card pos small">
 		<h1>Review has been added</h1>
 		<h3>Good job!</h3>
         <p>You have reviewed {{rated}} applicants/abstracts this session.</p>
+        {% if type == "applicant" %}
         <a href="/applicants" class="btn blue">Rate another applicant</a>
-    </div></div></div>
+        {% else %}
+        <a href="/abstracts" class="btn blue">Rate another abstract</a>
+        {% endif %}
+    </div></div></div></div>
 {% endblock %}

@@ -1,14 +1,13 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="hero"><br><br><h1>IS3B applicant rater</h1><br><br></div>
-
 <div class="container">
 <div class="row">
     {% if p %}
     <div class="col c6">
     <div class="card">
-        <div class="items"><div class="btn badge sm blue">{{p[7]}}</div></div>
-		<h1>Applicant #{{p[0]}}</h1><br>
+        <div class="items"><div class="btn badge sm blue">{{p[8]}}</div></div>
+		<h1>Applicant #{{p[0]}}</h1>
+        <h2>born {{p[7]}}</h2><br>
         <h3>Afilliation</h3>
         <p>{{p[1]}}<br>{{p[2]}}</p>
         <h3>Location</h3>

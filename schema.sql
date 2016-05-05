@@ -4,6 +4,7 @@ create table if not exists persons (
   last text not null,
   email text not null,
   gender text not null,
+  birth text not null,
   department text not null,
   institution text not null,
   state text not null,
@@ -39,20 +40,30 @@ create table if not exists abstracts (
   unique(reviewer, pid)
 );
 
-insert into persons (pid, first, last, email, gender, department, institution,
+insert into persons (pid, first, last, email, gender, birth, department, institution,
     state, country, degree, profile, topic, wants_poster, wants_talk)
-    values (1, "Fozzy", "Bear", "fozzy@bear.com", "male", "Fun", "Universe",
+    values (1, "Fozzy", "Bear", "fozzy@bear.com", "male", "2000-01-01", "Fun", "Universe",
     "CDMX", "Mexico", "B.Sc.", "bear", "fun fun fun", "yes", "yes");
 
-insert into persons (pid, first, last, email, gender, department, institution,
+insert into persons (pid, first, last, email, gender, birth, department, institution,
     state, country, degree, profile, topic, wants_poster, wants_talk)
-    values (2, "Miss", "Piggy", "miss@piggy.com", "female", "Anger", "MIT",
+    values (2, "Miss", "Piggy", "miss@piggy.com", "female", "2000-01-01","Anger", "MIT",
     "EDOMEX", "Mexico", "M.Sc.", "pig", "love kermit", "no", "yes");
 
-insert into persons (pid, first, last, email, gender, department, institution,
+insert into persons (pid, first, last, email, gender, birth, department, institution,
     state, country, degree, profile, topic, wants_poster, wants_talk)
-    values (3, "Gonzo", "What?", "gonzo@gonzo.com", "male", "Crazy", "Harvard",
+    values (3, "Gonzo", "What?", "gonzo@gonzo.com", "male", "2000-01-01","Crazy", "Harvard",
     "New york", "USA", "Ph.D.", "who knows", "cweocjnmnlñmwpq", "yes", "no");
 
-insert into ratings (pid, reviewer, position, institution, distance, equality)
-    values (1, "Fozzy", 1, 3, 0, 1);
+insert into persons (pid, first, last, email, gender, birth, department, institution,
+    state, country, degree, profile, topic, wants_poster, wants_talk, abstract_talk,
+    abstract_poster)
+    values (4, "Beaker", "Brrrriii", "beaker@sceince.com", "male", "2000-01-01", "Scientist", "Harvard",
+    "New york", "USA", "Ph.D.", "P.I.", "Some sciency stuff", "yes", "no",
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec dolor urna.
+    Integer orci odio, fringilla vel mollis ut, tempus ac sem. Phasellus quis lacinia sapien,
+    vitae vulputate diam. Phasellus nisl leo, elementum eget ligula sit amet.",
+    "In fringilla tristique viverra. Morbi sit amet cursus lorem. Ut sit amet convallis tellus.
+    Mauris aliquam eget leo pellentesque mollis. Proin sit amet mollis erat.
+    In hac habitasse platea dictumst."
+    );

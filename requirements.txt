@@ -1,0 +1,4 @@
+flask>=0.10
+flask-wtf
+atlas
+pandas>=0.17

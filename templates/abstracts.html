@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+<div class="row">
+    {% if a %}
+    <div class="col c6">
+    <div class="card">
+        <div class="items"><div class="btn badge sm blue">{{a[4]}}</div></div>
+		<h1>Applicant #{{a[0]}}</h1><br>
+        <h3>Research topic</h3>
+        <p>{{a[1]}}</p>
+        {% if a[2] %}
+        <h3>Short talk abstract</h3>
+        <p>{{a[2]}}</p>
+        {% endif %}{% if a[3] %}
+        <h3>Poster abstract</h3>
+        <p>{{a[3]}}</p>
+        {% endif %}
+    </div>
+    </div>
+    <div class="col c6">
+    <div class="card">
+        <h1>Your review</h1><br>
+        <form method=post action="/abstracts">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.topic) }}
+            {% if a[2] or a[3] %}
+            {{ render_field(form.abstract) }}
+            {{ render_field(form.english) }}
+            {% endif %}
+            <input type=submit value="Submit review" class="btn blue">
+        </form>
+    </div></div>
+    {% else %}
+    <div class="col c12">
+    <div class="card small">
+        <h1>You have reviewed all abstracts!</h1><br>
+        <h3>That's awesome!</h3>
+    </div></div>
+    {% endif %}</div>
+{% endblock %}

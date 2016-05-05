@@ -6,8 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>IS3B review app</title>
 <meta name="description" content="IS3B application review">
-<meta name="viewport" content="width=device-width, max-scale=1, min-scale=1, user-scalable=no">
-<link href='//fonts.googleapis.com/css?family=Lato|Inconsolata' rel='stylesheet' type='text/css'-->
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=no">
+<link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'-->
 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 <link type="text/css" rel="stylesheet" href="/static/soma.css"/>
 <style type="text/css">
@@ -24,7 +24,7 @@
 	}
 
 	.hero > h1 {
-		font: 50px Inconsolata, monospace;
+		font: 50px Lato, sans-serif;
 	}
 
     ul.errors { color: red; }
@@ -45,6 +45,7 @@
             {% endif %}
             </div>
         </div>
+        <div class="hero"><br><h1>IS3B applicant rater</h1><br></div>
         {% block content %}{% endblock %}
         <script type="text/javascript">
 			var a=!1,b=document.getElementById("topnav");toggle=function(){a?(b.className="nav",b.blur()):b.className="nav show";a=!a};
