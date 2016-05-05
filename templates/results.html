@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+<div class="row">
+    <div class="col c12">
+    <a href='/static/res.csv' class="btn blue sm"><i class="fa fa-pie-chart fa-fw"></i>&nbsp;Download CSV</a>    
+    <h2>Results</h2>
+    <table class="table">
+    <thead>
+    <tr><th>id</th><th>name</th><th>institution</th><th>country</th><th>points</th></tr>
+    </thead>
+    <tbody>
+    {% for r in table %}<tr>{% for x in r %}<td>{{x}}</td>{% endfor %}</tr>{% endfor %}
+    </tbody></table>
+    </div></div></div>
+{% endblock %}

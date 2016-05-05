@@ -109,22 +109,22 @@ def logout():
 
 @app.route('/applicants', methods=['POST', 'GET'])
 @login_required
-def rate_person(rated=0):
+def rate_person():
     cur = g.db.execute(next_person, (session['user'],))
     p = cur.fetchone()
     form = PersonForm(request.form)
     if request.method == 'POST' and form.validate():
-        g.db.execute(insert_abstract_rating, (p[0], session['user'], form.pos.data,
+        g.db.execute(insert_person_rating, (p[0], session['user'], form.pos.data,
             form.inst.data, form.dist.data))
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='applicant'))
-    return render_template('applicants.html', p=p, rated=rated, form=form,
+    return render_template('applicants.html', p=p, form=form,
         user=session['user'], role=session['role'])
 
 @app.route('/abstracts', methods=['POST', 'GET'])
 @login_required
-def rate_abstract(rated=0):
+def rate_abstract():
     cur = g.db.execute(next_abstract, (session['user'],))
     a = cur.fetchone()
     has_abstract = a is not None and (a[2] or a[3])
@@ -139,13 +139,31 @@ def rate_abstract(rated=0):
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='abstract'))
-    return render_template('abstracts.html', a=a, rated=rated, form=form,
+    return render_template('abstracts.html', a=a, form=form,
         user=session['user'], role=session['role'])
 
 @app.route('/added/<type>')
 def added(type):
     return render_template('added.html', rated=session['rated'],
         user=session['user'], role=session['role'], type=type)
+
+@app.route('/results')
+def results():
+    import pandas as pd
+    persons = pd.read_sql("persons", "sqlite:///data/master.db")
+    ratings = pd.read_sql(average_ratings, "sqlite:///data/master.db")
+    abstracts = pd.read_sql(average_abstracts, "sqlite:///data/master.db")
+    persons = pd.merge(persons, ratings, on='pid', how='left')
+    persons = pd.merge(persons, abstracts, on='pid', how='left', suffixes=('_applicant', '_abstract'))
+
+    persons["total"] = persons[['p_position', 'p_institution', 'p_distance',
+        'p_topic', 'p_abstract']].sum(axis=1).fillna(0)
+    persons = persons.sort_values(by="total", ascending=False)
+    persons.to_csv('static/res.csv')
+    table = zip(persons['pid'], persons['first'] + persons['last'],
+        persons['institution'], persons['country'], persons['total'])
+    return render_template('results.html', table=table, user=session['user'],
+        role=session['role'])
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

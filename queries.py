@@ -19,3 +19,13 @@ insert_person_rating = 'insert or ignore into ratings (pid, reviewer, position, 
 
 insert_abstract_rating = 'insert or ignore into abstracts (pid, reviewer, topic, \
     abstract, english) values (?, ?, ?, ?, ?)'
+
+average_ratings = 'select pid, avg(position) as p_position, avg(institution) as p_institution, \
+    avg(distance) as p_distance, avg(equality) as p_equality, group_concat(reviewer) \
+    as reviewers, count(*) as nrev from ratings group by pid'
+
+average_abstracts = 'select pid, avg(topic) as p_topic, avg(abstract) as p_abstract, \
+    avg(english) as p_english, group_concat(reviewer) as reviewers, count(*) as nrev \
+    from abstracts group by pid'
+
+all_emails = 'select email from persons'

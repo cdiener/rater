@@ -37,11 +37,14 @@
 		<div class="nav" id="topnav" tabindex="-1" onclick="toggle()">
             <div class="container">
             <a href="/" class="pagename">{% if user %}Hi {{user}}!{% endif %}</a>
-            <a href="/"><i class="fa fa-home fa-fw"></i>&nbsp;&nbsp;Home</a>
-            {% if user %}<a href="/applicants"><i class="fa fa-users fa-fw"></i>&nbsp;&nbsp;Review applicants</a>
-            {% if role == "all" %}<a href="/abstracts"><i class="fa fa-book fa-fw"></i>&nbsp;&nbsp;Review abstracts</a>
+            <a href="/"><i class="fa fa-home fa-fw"></i>&nbsp;Home</a>
+            {% if user %}<a href="/applicants"><i class="fa fa-users fa-fw"></i>&nbsp;Applicants</a>
+            {% if role == "all" %}
+            <a href="/abstracts"><i class="fa fa-book fa-fw"></i>&nbsp;Abstracts</a>
+            <a href="/import"><i class="fa fa-upload fa-fw"></i>&nbsp;Import</a>
             {% endif %}
-            <a href="/logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp;&nbsp;Log out</a>
+            <a href="/results"><i class="fa fa-area-chart fa-fw"></i>&nbsp;Results</a>
+            <a href="/logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp;Log out</a>
             {% endif %}
             </div>
         </div>
