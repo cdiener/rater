@@ -5,16 +5,22 @@
     {% if a %}
     <div class="col c6">
     <div class="card">
-        <div class="items"><div class="btn badge sm blue">{{a[4]}}</div></div>
+        <div class="items"><div class="btn badge sm blue">{{a[10]}}</div></div>
 		<h1>Applicant #{{a[0]}}</h1><br>
         <h3>Research topic</h3>
         <p>{{a[1]}}</p>
-        {% if a[2] %}
+        {% if a[5] %}
         <h3>Short talk abstract</h3>
-        <p>{{a[2]}}</p>
-        {% endif %}{% if a[3] %}
-        <h3>Poster abstract</h3>
+        <p style="font-weight: bold">{{a[2]}}</p>
         <p>{{a[3]}}</p>
+        <p>{{a[4]}}</p>
+        <p>{{a[5]}}</p>
+        {% endif %}{% if a[9] %}
+        <h3>Poster abstract</h3>
+        <p style="font-weight: bold">{{a[6]}}</p>
+        <p>{{a[7]}}</p>
+        <p>{{a[8]}}</p>
+        <p>{{a[9]}}</p>
         {% endif %}
     </div>
     </div>
@@ -24,7 +30,7 @@
         <form method=post action="/abstracts">
             {{ form.hidden_tag() }}
             {{ render_field(form.topic) }}
-            {% if a[2] or a[3] %}
+            {% if a[5] or a[9] %}
             {{ render_field(form.abstract) }}
             {{ render_field(form.english) }}
             {% endif %}

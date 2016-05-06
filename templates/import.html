@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+<div class="row">
+    <div class="col c12">
+    <div class="card">
+		<h1>Import data</h1><br>
+		<form method=post action="/import" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.persons) }}
+            {{ render_field(form.posters) }}
+            {{ render_field(form.talks) }}
+            <input type=submit value="Upload" class="btn blue sm">
+        </form>
+    </div></div></div></div>
+{% endblock %}

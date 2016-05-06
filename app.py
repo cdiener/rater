@@ -7,6 +7,12 @@ from functools import wraps
 from contextlib import closing
 from wtforms import SelectField, PasswordField, validators
 from flask_wtf import Form
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from os import urandom
+import uuid
+import pandas as pd
+
+PERSON_COLS = (14, 0, 1 ,4, 2, 3, 8, 5, 7, 6, 9, 10, 11)
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -46,6 +52,11 @@ class TopicForm(Form):
     [rating_validator], choices=[('100', 'Pick one..'), ('0', '0 - bad'),
     ('1', '1 - average'), ('2', '2 - amazing')])
 
+class ImportForm(Form):
+    persons = FileField('Choose an applicant file', [FileAllowed(['.csv'])])
+    posters = FileField('Choose a poster abstracts file', [FileAllowed(['.csv'])])
+    talks = FileField('Choose a talk abstracts file', [FileAllowed(['.csv'])])
+
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
 
@@ -53,7 +64,14 @@ def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
-        db.commit()
+
+def make_token(n, word=None):
+    if word:
+        return uuid.uuid5(uuid.NAMESPACE_DNS, word + app.config['SECRET_KEY']).hex[0:n]
+    return uuid.uuid4().hex[0:n]
+
+def tokenize(users):
+    return {make_token(16, u[0]): u for u in users}
 
 @app.before_request
 def before_request():
@@ -112,6 +130,7 @@ def logout():
 def rate_person():
     cur = g.db.execute(next_person, (session['user'],))
     p = cur.fetchone()
+    print(p)
     form = PersonForm(request.form)
     if request.method == 'POST' and form.validate():
         g.db.execute(insert_person_rating, (p[0], session['user'], form.pos.data,
@@ -127,7 +146,7 @@ def rate_person():
 def rate_abstract():
     cur = g.db.execute(next_abstract, (session['user'],))
     a = cur.fetchone()
-    has_abstract = a is not None and (a[2] or a[3])
+    has_abstract = a is not None and (a[5] or a[9])
     if has_abstract: form = AbstractForm(request.form)
     else: form = TopicForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -143,16 +162,17 @@ def rate_abstract():
         user=session['user'], role=session['role'])
 
 @app.route('/added/<type>')
+@login_required
 def added(type):
     return render_template('added.html', rated=session['rated'],
         user=session['user'], role=session['role'], type=type)
 
 @app.route('/results')
+@login_required
 def results():
-    import pandas as pd
-    persons = pd.read_sql("persons", "sqlite:///data/master.db")
-    ratings = pd.read_sql(average_ratings, "sqlite:///data/master.db")
-    abstracts = pd.read_sql(average_abstracts, "sqlite:///data/master.db")
+    persons = pd.read_sql("select * from persons", g.db)
+    ratings = pd.read_sql(average_ratings, g.db)
+    abstracts = pd.read_sql(average_abstracts, g.db)
     persons = pd.merge(persons, ratings, on='pid', how='left')
     persons = pd.merge(persons, abstracts, on='pid', how='left', suffixes=('_applicant', '_abstract'))
 
@@ -160,9 +180,57 @@ def results():
         'p_topic', 'p_abstract']].sum(axis=1).fillna(0)
     persons = persons.sort_values(by="total", ascending=False)
     persons.to_csv('static/res.csv')
-    table = zip(persons['pid'], persons['first'] + persons['last'],
+    table = zip(persons['pid'], persons['first'] + ' ' + persons['last'],
         persons['institution'], persons['country'], persons['total'])
     return render_template('results.html', table=table, user=session['user'],
+        role=session['role'])
+
+@app.route('/import', methods=['POST', 'GET'])
+@login_required
+def file_import():
+    form = ImportForm(request.form)
+    if request.method == 'POST' and form.validate():
+    #    try:
+        #form.persons.data.save('data/persons.csv')
+        p = pd.read_csv(request.files['persons'])
+        a_posters = pd.read_csv(request.files['posters'])
+        a_talks = pd.read_csv(request.files['talks'])
+    #    except:
+    #        return render_template('message.html', type='error', title='Parse error',
+    #            message='Could not parse the files. Please ensure that the uploaded \
+    #            files are CSV files that can be read by pandas.', user=session['user'],
+    #                role=session['role'])
+        p.ix[:, 4] = p.ix[:, 4].str.strip().str.lower()
+        p.ix[:, 14] = p.ix[:, 14].astype('str')
+        cur = g.db.execute(person_count)
+        n = cur.fetchone()[0]
+        inserter = zip(*[p.ix[:,i] for i in PERSON_COLS])
+        g.db.executemany(insert_person, inserter)
+        g.db.commit()
+        cur = g.db.execute(all_emails)
+        emails = [e[0] for e in cur.fetchall()]
+        a_posters['Email'] = a_posters['Email'].str.strip().str.lower()
+        a_talks['Email'] = a_talks['Email'].str.strip().str.lower()
+        a_posters['matched'] = a_posters['Email'].isin(emails)
+        a_talks['matched'] = a_talks['Email'].isin(emails)
+        a = a_posters.loc[a_posters.matched]
+        inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,5], a.ix[:,6], a.ix[:,2])
+        g.db.executemany(update_poster, inserter)
+        a = a_talks.loc[a_talks.matched]
+        print(a)
+        inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,5], a.ix[:,6], a.ix[:,2])
+        g.db.executemany(update_talk, inserter)
+        g.db.commit()
+        cur = g.db.execute(person_count)
+        persons_added = cur.fetchone()[0] - n
+        emails_not_found = a_posters.loc[a_posters.matched == False]['Email'].append(
+            a_talks.loc[a_talks.matched == False]['Email'])
+        emails_not_found = emails_not_found.unique()
+        msg = 'Added {} new applicants. Unmatched Emails ({}): {}'.format(
+            persons_added, len(emails_not_found), ', '.join(emails_not_found))
+        return render_template('message.html', type='good', title='Added new data',
+            message=msg, user=session['user'], role=session['role'])
+    return render_template('import.html', form=form, user=session['user'],
         role=session['role'])
 
 if __name__ == '__main__':

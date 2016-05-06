@@ -1,4 +1,4 @@
 flask>=0.10
 flask-wtf
-atlas
+nomkl
 pandas>=0.17

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+<div class="row">
+    <div class="col c12">
+    {% if type == "error" %}
+    <div class="card neg small">
+    {% elif type == "good" %}
+    <div class="card pos small">
+    {% else %}
+    <div class="card pos small">
+    {% endif %}
+		<h1>{{title}}</h1><br>
+		<p>{{message}}</p>
+    </div></div></div></div>
+{% endblock %}

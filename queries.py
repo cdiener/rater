@@ -9,12 +9,13 @@ next_person = 'select p.pid, p.department, p.institution, p.state, p.country, \
     as rev from persons as p left join ratings as r on p.pid=r.pid group by p.pid \
     having instr(rev, ?)=0 or r.reviewer is null order by n limit 1'
 
-next_abstract = 'select p.pid, p.topic, p.abstract_talk, p.abstract_poster, \
+next_abstract = 'select p.pid, p.topic, p.talk_title, p.talk_authors, p.talk_affiliations, \
+    p.talk_abstract, p.poster_title, p.poster_authors, p.poster_affiliations, p.poster_abstract, \
     ifnull(count(a.pid),0) as n, group_concat(a.reviewer) as rev \
     from persons as p left join abstracts as a on p.pid=a.pid group by p.pid \
     having instr(rev, ?)=0 or a.reviewer is null order by n limit 1'
 
-insert_person_rating = 'insert or ignore into ratings (pid, reviewer, position, \
+insert_person_rating = 'insert into ratings (pid, reviewer, position, \
     institution, distance, equality) values (?, ?, ?, ?, ?, 0)'
 
 insert_abstract_rating = 'insert or ignore into abstracts (pid, reviewer, topic, \
@@ -29,3 +30,13 @@ average_abstracts = 'select pid, avg(topic) as p_topic, avg(abstract) as p_abstr
     from abstracts group by pid'
 
 all_emails = 'select email from persons'
+
+insert_person = 'insert or ignore into persons (pid, first, last, email, \
+    gender, birth, department, institution, state, country, degree, profile, \
+    topic) values (?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+
+update_talk = 'update persons set talk_title=?, talk_abstract=?, talk_authors=?, \
+    talk_affiliations=? where email=?'
+
+update_poster = 'update persons set poster_title=?, poster_abstract=?, \
+    poster_authors=?, poster_affiliations=? where email=?'
