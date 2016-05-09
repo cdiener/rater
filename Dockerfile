@@ -3,7 +3,7 @@ FROM continuumio/miniconda3
 COPY . /app
 WORKDIR /app
 
-RUN conda install -y --file requirements.txt && conda clean -tipsy
+RUN conda install -y --file requirements.txt && pip install fake-factory && conda clean -tipsy
 RUN rm data/*.db && python -c "from app import init_db; init_db()"
 EXPOSE 5000
 

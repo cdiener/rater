@@ -11,12 +11,15 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 from os import urandom
 import uuid
 import pandas as pd
+import sys
 
 PERSON_COLS = (14, 0, 1 ,4, 2, 3, 8, 5, 7, 6, 9, 10, 11)
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
 
+# The forms
+###########
 rating_validator = validators.AnyOf(['0', '1', '2', '3', '4'],
     message="You forgot to select an option")
 
@@ -35,11 +38,11 @@ class PersonForm(Form):
     dist = SelectField('How do you rate the travel distance?', [rating_validator],
     choices=[('100', 'Pick one..'), ('0', 'local'), ('1', 'national'),
     ('2', 'international')])
-
-class AbstractForm(Form):
     topic = SelectField('How do you rate the reserach topic?',
     [rating_validator], choices=[('100', 'Pick one..'), ('0', '0 - bad'),
     ('1', '1 - average'), ('2', '2 - amazing')])
+
+class AbstractForm(Form):
     abstract = SelectField('How do you rate the abstract(s)?', [rating_validator],
     choices=[('100', 'Pick one..'), ('0', '0 - insufficient'), ('1', '1 - barely acceptable'),
     ('2', '2 - acceptable'), ('3', '3 - pretty good'), ('4', '4 - amazing')])
@@ -47,23 +50,34 @@ class AbstractForm(Form):
     choices=[('100', 'Pick one..'), ('0', 'insufficient'), ('1', 'acceptable'),
     ('2', 'fluent')])
 
-class TopicForm(Form):
-    topic = SelectField('How do you rate the reserach topic?',
-    [rating_validator], choices=[('100', 'Pick one..'), ('0', '0 - bad'),
-    ('1', '1 - average'), ('2', '2 - amazing')])
-
 class ImportForm(Form):
     persons = FileField('Choose an applicant file', [FileAllowed(['.csv'])])
     posters = FileField('Choose a poster abstracts file', [FileAllowed(['.csv'])])
     talks = FileField('Choose a talk abstracts file', [FileAllowed(['.csv'])])
+###########
 
+# Utility functions
+###########
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
+
+def add_fakes(db, n, base_id=1):
+    from faker import Faker
+    fake = Faker()
+    for i in range(n):
+        vals = (str(base_id+i), fake.first_name(), fake.last_name(), fake.email(),
+            'NA', fake.date(), fake.military_ship(), fake.company(), fake.state(),
+            fake.country(), 'Ph.D.', fake.job(), fake.sentence(), fake.sentence(),
+            fake.text(750), fake.name(), fake.company(), fake.sentence(),
+            fake.text(450), fake.name(), fake.company())
+        db.execute(insert_complete, vals)
+    db.commit()
 
 def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
+        add_fakes(db, 50)
 
 def make_token(n, word=None):
     if word:
@@ -90,7 +104,9 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+#########3
 
+# Routes
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     form = LoginForm(request.form)
@@ -130,11 +146,10 @@ def logout():
 def rate_person():
     cur = g.db.execute(next_person, (session['user'],))
     p = cur.fetchone()
-    print(p)
     form = PersonForm(request.form)
     if request.method == 'POST' and form.validate():
         g.db.execute(insert_person_rating, (p[0], session['user'], form.pos.data,
-            form.inst.data, form.dist.data))
+            form.inst.data, form.dist.data, form.topic.data))
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='applicant'))
@@ -146,15 +161,10 @@ def rate_person():
 def rate_abstract():
     cur = g.db.execute(next_abstract, (session['user'],))
     a = cur.fetchone()
-    has_abstract = a is not None and (a[5] or a[9])
-    if has_abstract: form = AbstractForm(request.form)
-    else: form = TopicForm(request.form)
+    form = AbstractForm(request.form)
     if request.method == 'POST' and form.validate():
-        if has_abstract:
-            g.db.execute(insert_abstract_rating, (a[0], session['user'],
-                form.topic.data, form.abstract.data, form.english.data))
-        else: g.db.execute(insert_abstract_rating, (a[0], session['user'],
-            form.topic.data, 0, 0))
+        g.db.execute(insert_abstract_rating, (a[0], session['user'],
+            form.abstract.data, form.english.data))
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='abstract'))
@@ -190,16 +200,21 @@ def results():
 def file_import():
     form = ImportForm(request.form)
     if request.method == 'POST' and form.validate():
-    #    try:
-        #form.persons.data.save('data/persons.csv')
-        p = pd.read_csv(request.files['persons'])
-        a_posters = pd.read_csv(request.files['posters'])
-        a_talks = pd.read_csv(request.files['talks'])
-    #    except:
-    #        return render_template('message.html', type='error', title='Parse error',
-    #            message='Could not parse the files. Please ensure that the uploaded \
-    #            files are CSV files that can be read by pandas.', user=session['user'],
-    #                role=session['role'])
+        try:
+            p = pd.read_csv(request.files['persons'])
+            a_posters = pd.read_csv(request.files['posters'])
+            a_talks = pd.read_csv(request.files['talks'])
+            if p.shape[1] != 14:
+                raise ValueError("Wrong numbers of columns in applicant data!")
+            elif a_posters.shape[1] != 8:
+                raise ValueError("Wrong numbers of columns in poster data!")
+            elif a_talks.shape[1] != 8:
+                raise ValueError("Wrong numbers of columns in talk data!")
+        except:
+            msg = 'Could not parse the files. Please ensure that the uploaded \
+            files are CSV files that can be read by pandas. Error:' + sys.exc_info()[0]
+            return render_template('message.html', type='error', title='Parse error',
+                message=msg, user=session['user'], role=session['role'])
         p.ix[:, 4] = p.ix[:, 4].str.strip().str.lower()
         p.ix[:, 14] = p.ix[:, 14].astype('str')
         cur = g.db.execute(person_count)

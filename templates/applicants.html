@@ -5,7 +5,7 @@
     {% if p %}
     <div class="col c6">
     <div class="card">
-        <div class="items"><div class="btn badge sm blue">{{p[8]}}</div></div>
+        <div class="items"><div class="btn badge sm blue">{{p[9]}}</div></div>
 		<h1>Applicant #{{p[0]}}</h1>
         <h2>born {{p[7]}}</h2><br>
         <h3>Afilliation</h3>
@@ -14,6 +14,8 @@
         <p>{{p[3]}}<br>{{p[4]}}</p>
         <h3>Degree &amp; position</h3>
         <p>{{p[5]}}<br>{{p[6]}}</p>
+        <h3>Research Topic</h3>
+        <p>{{p[8]}}</p>
     </div>
     </div>
     <div class="col c6">
@@ -24,6 +26,7 @@
             {{ render_field(form.pos) }}
             {{ render_field(form.inst) }}
             {{ render_field(form.dist) }}
+            {{ render_field(form.topic) }}
             <input type=submit value="Submit review" class="btn blue">
         </form>
     </div></div>
