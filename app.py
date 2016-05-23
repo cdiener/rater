@@ -11,7 +11,6 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 from os import urandom
 import uuid
 import pandas as pd
-import sys
 
 PERSON_COLS = (14, 0, 1 ,4, 2, 3, 8, 5, 7, 6, 9, 10, 11)
 
@@ -28,7 +27,7 @@ class LoginForm(Form):
     validators.AnyOf(app.config['USERS'].keys(), message="Invalid token!")])
 
 class PersonForm(Form):
-    pos = SelectField('What do you think is the position of the applicant?',
+    pos = SelectField('What do YOU think is the position of the applicant?',
     [rating_validator], choices=[('100', 'Pick one..'), ('0', 'Undergrad'),
     ('1', 'M.Sc./Ph.D. student or health pro.'),
     ('2', 'Postdoc, Associate Prof. or M.D.'), ('3', 'Principal Investigator')])
@@ -38,7 +37,7 @@ class PersonForm(Form):
     dist = SelectField('How do you rate the travel distance?', [rating_validator],
     choices=[('100', 'Pick one..'), ('0', 'local'), ('1', 'national'),
     ('2', 'international')])
-    topic = SelectField('How do you rate the reserach topic?',
+    topic = SelectField('How do you rate the research topic?',
     [rating_validator], choices=[('100', 'Pick one..'), ('0', '0 - bad'),
     ('1', '1 - average'), ('2', '2 - amazing')])
 
@@ -46,7 +45,7 @@ class AbstractForm(Form):
     abstract = SelectField('How do you rate the abstract(s)?', [rating_validator],
     choices=[('100', 'Pick one..'), ('0', '0 - insufficient'), ('1', '1 - barely acceptable'),
     ('2', '2 - acceptable'), ('3', '3 - pretty good'), ('4', '4 - amazing')])
-    english = SelectField('How do you rate quality of English?', [rating_validator],
+    english = SelectField('How do you rate the quality of English?', [rating_validator],
     choices=[('100', 'Pick one..'), ('0', 'insufficient'), ('1', 'acceptable'),
     ('2', 'fluent')])
 
@@ -204,15 +203,15 @@ def file_import():
             p = pd.read_csv(request.files['persons'])
             a_posters = pd.read_csv(request.files['posters'])
             a_talks = pd.read_csv(request.files['talks'])
-            if p.shape[1] != 14:
+            if p.shape[1] != 15:
                 raise ValueError("Wrong numbers of columns in applicant data!")
             elif a_posters.shape[1] != 8:
                 raise ValueError("Wrong numbers of columns in poster data!")
             elif a_talks.shape[1] != 8:
                 raise ValueError("Wrong numbers of columns in talk data!")
-        except:
+        except BaseException as e:
             msg = 'Could not parse the files. Please ensure that the uploaded \
-            files are CSV files that can be read by pandas. Error:' + sys.exc_info()[0]
+            files are CSV files that can be read by pandas. Error: ' + str(e)
             return render_template('message.html', type='error', title='Parse error',
                 message=msg, user=session['user'], role=session['role'])
         p.ix[:, 4] = p.ix[:, 4].str.strip().str.lower()
@@ -249,4 +248,4 @@ def file_import():
         role=session['role'])
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=80)
