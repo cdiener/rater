@@ -235,6 +235,9 @@ def file_import():
         a_talks['Email'] = a_talks['Email'].str.strip().str.lower()
         a_posters['matched'] = a_posters['Email'].isin(emails)
         a_talks['matched'] = a_talks['Email'].isin(emails)
+
+        # The weird order and columns is due to errors in the form
+        # design which we can not alter anymore
         a = a_posters.loc[a_posters.matched]
         inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,6], a.ix[:,5], a.ix[:,2])
         g.db.executemany(update_poster, inserter)
