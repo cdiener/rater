@@ -23,9 +23,9 @@
         <h1>Your review</h1><br>
         <form method=post action="/applicants">
             {{ form.hidden_tag() }}
-            {{ render_field(form.pos) }}
             {{ render_field(form.inst) }}
             {{ render_field(form.dist) }}
+            {{ render_field(form.pos) }}
             {{ render_field(form.topic) }}
             <input type=submit value="Submit review" class="btn blue">
         </form>

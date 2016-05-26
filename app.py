@@ -129,6 +129,10 @@ def login():
 def show_entries():
     cur = g.db.execute(review_count, (session['user'],))
     nrev = cur.fetchone()[0]
+    cur = g.db.execute("select count(*) from ratings")
+    ntotrev = cur.fetchone()[0]
+    cur = g.db.execute("select count(*) from abstracts")
+    nabstotrev = cur.fetchone()[0]
     cur = g.db.execute(person_count)
     ntot = cur.fetchone()[0]
     nabsrev = nabstot = 0
@@ -138,7 +142,8 @@ def show_entries():
         cur = g.db.execute(abstract_rev_count, (session['user'],))
         nabsrev = cur.fetchone()[0]
     return render_template('index.html', nrev=nrev, ntot=ntot, nabsrev=nabsrev,
-        nabstot=nabstot, user=session['user'], role=session['role'])
+        nabstot=nabstot, ntotrev=ntotrev, nabstotrev=nabstotrev,
+        user=session['user'], role=session['role'])
 
 @app.route('/logout')
 def logout():
