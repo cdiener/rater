@@ -133,10 +133,12 @@ def show_entries():
     ntot = cur.fetchone()[0]
     nabsrev = nabstot = 0
     if session['role'] == 'all':
+        cur = g.db.execute(abstract_count)
+        nabstot = cur.fetchone()[0]
         cur = g.db.execute(abstract_rev_count, (session['user'],))
         nabsrev = cur.fetchone()[0]
     return render_template('index.html', nrev=nrev, ntot=ntot, nabsrev=nabsrev,
-        user=session['user'], role=session['role'])
+        nabstot=nabstot, user=session['user'], role=session['role'])
 
 @app.route('/logout')
 def logout():
@@ -206,12 +208,12 @@ def file_import():
     form = ImportForm(request.form)
     if request.method == 'POST' and form.validate():
         try:
-            p = pd.read_csv(request.files['persons'])
+            p = pd.read_csv(request.files['persons'], skipinitialspace=True).fillna("NA")
             a_posters = pd.read_csv(request.files['posters'])
             a_talks = pd.read_csv(request.files['talks'])
             if p.shape[1] != 15:
                 raise ValueError("Wrong numbers of columns in applicant data!")
-            elif a_posters.shape[1] != 8:
+            elif a_posters.shape[1] != 7:
                 raise ValueError("Wrong numbers of columns in poster data!")
             elif a_talks.shape[1] != 8:
                 raise ValueError("Wrong numbers of columns in talk data!")
@@ -234,10 +236,9 @@ def file_import():
         a_posters['matched'] = a_posters['Email'].isin(emails)
         a_talks['matched'] = a_talks['Email'].isin(emails)
         a = a_posters.loc[a_posters.matched]
-        inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,5], a.ix[:,6], a.ix[:,2])
+        inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,6], a.ix[:,5], a.ix[:,2])
         g.db.executemany(update_poster, inserter)
         a = a_talks.loc[a_talks.matched]
-        print(a)
         inserter = zip(a.ix[:,3], a.ix[:,4], a.ix[:,5], a.ix[:,6], a.ix[:,2])
         g.db.executemany(update_talk, inserter)
         g.db.commit()
@@ -254,4 +255,4 @@ def file_import():
         role=session['role'])
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000, debug=True)

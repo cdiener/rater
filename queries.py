@@ -2,6 +2,8 @@ review_count = 'select count(*) from ratings where reviewer=?'
 
 abstract_rev_count = 'select count(*) from abstracts where reviewer=?'
 
+abstract_count = 'select count(*) from persons where (talk_abstract is not null or poster_abstract is not null)'
+
 person_count = 'select count(*) from persons'
 
 next_person = 'select p.pid, p.department, p.institution, p.state, p.country, \
