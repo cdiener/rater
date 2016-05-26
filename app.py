@@ -8,14 +8,20 @@ from contextlib import closing
 from wtforms import SelectField, PasswordField, validators
 from flask_wtf import Form
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from os import urandom
+from os import urandom, path
 import uuid
 import pandas as pd
 
 PERSON_COLS = (14, 0, 1 ,4, 2, 3, 8, 5, 7, 6, 9, 10, 11)
 
 app = Flask(__name__)
-app.config.from_pyfile("config.py")
+
+if path.exists("deploy_conf.py"):
+    app.config.from_pyfile("deploy_conf.py")
+    print("Using deploy configuration...")
+else:
+    app.config.from_pyfile("config.py")
+    print("Using mock configuration...")
 
 # The forms
 ###########
@@ -72,11 +78,11 @@ def add_fakes(db, n, base_id=1):
         db.execute(insert_complete, vals)
     db.commit()
 
-def init_db():
+def init_db(n=0):
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
-        add_fakes(db, 50)
+    if n > 0: add_fakes(db, n)
 
 def make_token(n, word=None):
     if word:
