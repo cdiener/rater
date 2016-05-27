@@ -201,7 +201,7 @@ def results():
     persons["total"] = persons[['p_position', 'p_institution', 'p_distance',
         'p_topic', 'p_abstract']].sum(axis=1).fillna(0)
     persons = persons.sort_values(by="total", ascending=False)
-    persons.to_csv('static/res.csv')
+    persons.to_csv('static/res.csv', encoding='utf-8')
     table = zip(persons['pid'], persons['first'] + ' ' + persons['last'],
         persons['institution'], persons['country'], persons['total'])
     return render_template('results.html', table=table, user=session['user'],
