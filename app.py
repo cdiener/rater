@@ -127,23 +127,21 @@ def login():
 @app.route('/')
 @login_required
 def show_entries():
+    data = {}
     cur = g.db.execute(review_count, (session['user'],))
-    nrev = cur.fetchone()[0]
+    data['nrev'] = cur.fetchone()[0]
     cur = g.db.execute("select count(*) from ratings")
-    ntotrev = cur.fetchone()[0]
+    data['ntotrev'] = cur.fetchone()[0]
     cur = g.db.execute("select count(*) from abstracts")
-    nabstotrev = cur.fetchone()[0]
+    data['nabstotrev'] = cur.fetchone()[0]
     cur = g.db.execute(person_count)
-    ntot = cur.fetchone()[0]
-    nabsrev = nabstot = 0
-    if session['role'] == 'all':
-        cur = g.db.execute(abstract_count)
-        nabstot = cur.fetchone()[0]
-        cur = g.db.execute(abstract_rev_count, (session['user'],))
-        nabsrev = cur.fetchone()[0]
-    return render_template('index.html', nrev=nrev, ntot=ntot, nabsrev=nabsrev,
-        nabstot=nabstot, ntotrev=ntotrev, nabstotrev=nabstotrev,
-        user=session['user'], role=session['role'])
+    data['ntot'] = cur.fetchone()[0]
+    cur = g.db.execute(abstract_count)
+    data['nabstot'] = cur.fetchone()[0]
+    cur = g.db.execute(abstract_rev_count, (session['user'],))
+    data['nabsrev'] = cur.fetchone()[0]
+    return render_template('index.html',user=session['user'],
+        role=session['role'], **data)
 
 @app.route('/logout')
 def logout():
@@ -171,6 +169,10 @@ def rate_person():
 @app.route('/abstracts', methods=['POST', 'GET'])
 @login_required
 def rate_abstract():
+    if session['role'] != 'all':
+        return render_template('message.html', type='error', title='Nope...',
+            message='You are not allowed to review abstracts :(',
+            user=session['user'], role=session['role'])
     cur = g.db.execute(next_abstract, (session['user'],))
     a = cur.fetchone()
     form = AbstractForm(request.form)
@@ -202,14 +204,21 @@ def results():
         'p_topic', 'p_abstract']].sum(axis=1).fillna(0)
     persons = persons.sort_values(by="total", ascending=False)
     persons.to_csv('static/res.csv', encoding='utf-8')
-    table = zip(persons['pid'], persons['first'] + ' ' + persons['last'],
-        persons['institution'], persons['country'], persons['total'])
+    table = zip(range(1,persons.shape[0]+1), persons['first'] + ' ' + persons['last'],
+        persons['institution'], persons['country'],
+        persons['nrev_applicant'].fillna(0).astype(int).astype(str) +
+        ' + ' + persons['nrev_abstract'].fillna(0).astype(int).astype(str),
+        persons['total'].round(2))
     return render_template('results.html', table=table, user=session['user'],
         role=session['role'])
 
 @app.route('/import', methods=['POST', 'GET'])
 @login_required
 def file_import():
+    if session['role'] != 'all':
+        return render_template('message.html', type='error', title='Nope...',
+            message='You are not allowed to import data :(',
+            user=session['user'], role=session['role'])
     form = ImportForm(request.form)
     if request.method == 'POST' and form.validate():
         try:

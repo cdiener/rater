@@ -2,18 +2,36 @@
 {% block content %}
 <div class="container">
 <div class="row">
-    <h2>Global stats</h2>
+    <div class="card" style="padding: 1em 2em">
+    <h1>How does it work?</h1>
+    <ul>
+    <li>Applicants can be reviewed by clicking on <a href="/applicants">Applicants</a>
+    in the menu bar. Simply go ahead an review as many applicants as you can.</li>
+    <li>You can see the latest results by clicking on <a href="/results">Results</a>
+    in the menu bar.</li>
+    <li>In case you are allowed to do so, you can also review abstracts by clicking on the
+    <a href="/abstracts">Abstracts</a> link in the menu bar (if you don't see the
+    link you are not allowed to <i class="fa fa-frown-o"></i>).</li>
+    <li>In case you are allowed to do so, you can upload new applicant and abstract
+    data by clicking the <a href="/import">Import</a> link. Please check with
+    Chris D. first whether there is a recent backup before doing so.
+    <li><div class="btn badge sm blue">5</div>&nbsp; this bubble denotes the number
+    of reviews the applicant/abstract has already received. This way you can check
+    easily whether there have been previous reviews.</li>
+    </ul></div>
     <div class="card">
-        <h3>There have been {{ntotrev}} applicant and {{nabstotrev}} abstract reviews. &nbsp;<i class="fa fa-thumbs-up"></i><h3>
+        <h1>Global stats</h1><br>
+        <h3>There are {{ntot}} applicants of which {{nabstot}} have submitted
+        their abstract.</h3><br>
+        <h3>There have been {{ntotrev}} applicant reviews and {{nabstotrev}}
+            abstract reviews. &nbsp;<i class="fa fa-thumbs-up"></i></h3><br>
+        <h3>This means, in average, there are {{(ntotrev/ntot)|round(2)}} reviews
+        per applicant and {{(nabstotrev/nabstot)|round(2)}} reviews per abstract.</h3>
     </div>
-    <h2>Your stats</h2>
     <div class="card">
-		<h1>Applicant reviews</h1><br>
+		<h1>Your stats</h1><br>
         <h3>You have reviewed {{nrev}} of {{ntot}} applicants. Nice job!<h3>
-    </div>
     {% if role == "all" %}
-    <div class="card">
-        <h1>Abstract reviews</h1><br>
-        <h3>You have reviewed {{nabsrev}} of {{nabstot}} abstracts. Way to go!<h3>
+        <br><h3>You have reviewed {{nabsrev}} of {{nabstot}} abstracts. Way to go!<h3>
     </div>{% endif %}</div></div>
 {% endblock %}
