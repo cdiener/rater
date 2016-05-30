@@ -82,7 +82,7 @@ def init_db(n=0):
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
-    if n > 0: add_fakes(db, n)
+        if n > 0: add_fakes(db, n)
 
 def make_token(n, word=None):
     if word:
@@ -120,6 +120,8 @@ def login():
         session['user'] = app.config['USERS'][token][0]
         session['role'] = app.config['USERS'][token][1]
         session['rated'] = 0
+        session['p'] = None     # next applicant to review
+        session['a'] = None     # next abstract to review
         flash('Thank you. Logging in...')
         return redirect(url_for('show_entries'))
     return render_template('login.html', form=form, n_user=len(app.config['USERS']))
@@ -151,38 +153,40 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('login'))
 
-@app.route('/applicants', methods=['POST', 'GET'])
+@app.route('/applicants', methods=['GET', 'POST'])
 @login_required
 def rate_person():
-    cur = g.db.execute(next_person, (session['user'],))
-    p = cur.fetchone()
+    if request.method == 'GET':
+        cur = g.db.execute(next_person, (session['user'],))
+        session['p'] = cur.fetchone()
     form = PersonForm(request.form)
-    if request.method == 'POST' and form.validate():
-        g.db.execute(insert_person_rating, (p[0], session['user'], form.pos.data,
-            form.inst.data, form.dist.data, form.topic.data))
+    if request.method == 'POST' and form.validate() and session['p']:
+        g.db.execute(insert_person_rating, (session['p'][0], session['user'],
+            form.pos.data, form.inst.data, form.dist.data, form.topic.data))
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='applicant'))
-    return render_template('applicants.html', p=p, form=form,
+    return render_template('applicants.html', form=form, p=session['p'],
         user=session['user'], role=session['role'])
 
-@app.route('/abstracts', methods=['POST', 'GET'])
+@app.route('/abstracts', methods=['GET', 'POST'])
 @login_required
 def rate_abstract():
     if session['role'] != 'all':
         return render_template('message.html', type='error', title='Nope...',
             message='You are not allowed to review abstracts :(',
             user=session['user'], role=session['role'])
-    cur = g.db.execute(next_abstract, (session['user'],))
-    a = cur.fetchone()
+    if request.method == 'GET':
+        cur = g.db.execute(next_abstract, (session['user'],))
+        session['a'] = cur.fetchone()
     form = AbstractForm(request.form)
-    if request.method == 'POST' and form.validate():
-        g.db.execute(insert_abstract_rating, (a[0], session['user'],
+    if request.method == 'POST' and form.validate() and session['a']:
+        g.db.execute(insert_abstract_rating, (session['a'][0], session['user'],
             form.abstract.data, form.english.data))
         g.db.commit()
         session['rated'] += 1
         return redirect(url_for('added', type='abstract'))
-    return render_template('abstracts.html', a=a, form=form,
+    return render_template('abstracts.html', form=form, a=session['a'],
         user=session['user'], role=session['role'])
 
 @app.route('/added/<type>')

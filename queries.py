@@ -18,10 +18,10 @@ next_abstract = 'select p.pid, p.talk_title, p.talk_authors, p.talk_affiliations
     having (instr(rev, ?)=0 or a.reviewer is null) and (p.talk_abstract is not null \
     or p.poster_abstract is not null) order by n limit 1'
 
-insert_person_rating = 'insert into ratings (pid, reviewer, position, \
+insert_person_rating = 'insert or replace into ratings (pid, reviewer, position, \
     institution, distance, topic, equality) values (?, ?, ?, ?, ?, ?, 0)'
 
-insert_abstract_rating = 'insert or ignore into abstracts (pid, reviewer, \
+insert_abstract_rating = 'insert or replace into abstracts (pid, reviewer, \
     abstract, english) values (?, ?, ?, ?)'
 
 average_ratings = 'select pid, avg(position) as p_position, avg(institution) as p_institution, \
