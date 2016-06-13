@@ -34,7 +34,7 @@ average_abstracts = 'select pid, avg(abstract) as p_abstract, \
 
 all_emails = 'select email from persons'
 
-insert_person = 'insert or ignore into persons (pid, first, last, email, \
+insert_person = 'insert or replace into persons (pid, first, last, email, \
     gender, birth, department, institution, state, country, degree, profile, \
     topic) values (?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
