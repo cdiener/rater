@@ -242,8 +242,7 @@ def file_import():
                 message=msg, user=session['user'], role=session['role'])
         p.ix[:, 4] = p.ix[:, 4].str.strip().str.lower()
         p.ix[:, 14] = p.ix[:, 14].astype('str')
-        cur = g.db.execute(person_count)
-        n = cur.fetchone()[0]
+
         inserter = zip(*[p.ix[:,i] for i in PERSON_COLS])
         g.db.executemany(insert_person, inserter)
         g.db.commit()
@@ -264,12 +263,12 @@ def file_import():
         g.db.executemany(update_talk, inserter)
         g.db.commit()
         cur = g.db.execute(person_count)
-        persons_added = cur.fetchone()[0] - n
+        n = cur.fetchone()[0]
         emails_not_found = a_posters.loc[a_posters.matched == False]['Email'].append(
             a_talks.loc[a_talks.matched == False]['Email'])
         emails_not_found = emails_not_found.unique()
-        msg = 'Added {} new applicants. Unmatched Emails ({}): {}'.format(
-            persons_added, len(emails_not_found), ', '.join(emails_not_found))
+        msg = '{} applicants in the database. Unmatched Emails ({}): {}'.format(
+            n, len(emails_not_found), ', '.join(emails_not_found))
         return render_template('message.html', type='good', title='Added new data',
             message=msg, user=session['user'], role=session['role'])
     return render_template('import.html', form=form, user=session['user'],
